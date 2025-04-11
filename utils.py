@@ -34,13 +34,17 @@ label_map = {v: k for k, v in class_indices.items()}
 
 
 def preprocess_image(image_file):
-    image_bytes = image_file.read()  # 🔁 Read only once
+    image_file.seek(0)  # Always reset the file pointer first
+    image_bytes = image_file.read()
+
+    # Validate the content is not empty
+    if not image_bytes:
+        raise ValueError("Uploaded image is empty or unreadable.")
+
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     image = image.resize((224, 224))
     image_array = np.array(image) / 255.0
     return np.expand_dims(image_array, axis=0)
-
-
 # In[12]:
 
 
