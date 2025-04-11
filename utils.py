@@ -10,7 +10,10 @@ from PIL import Image
 import json
 import os
 import io
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9df334f (Fix: use BytesIO for reading uploaded image)
 
 
 # In[9]:
