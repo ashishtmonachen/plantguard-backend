@@ -6,32 +6,15 @@ from utils import predict_disease
 from flask_cors import CORS
 import openai
 
-# 🔐 Hardcoded OpenAI API Key — use only for testing!
-openai.api_key = "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"
-
 app = Flask(__name__)
 CORS(app)
+
+# 🔐 Hardcoded OpenAI key (ONLY for demo purposes — don’t do this in production)
+openai.api_key = "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"  # Replace with your real API key
 
 @app.route('/')
 def home():
     return "🌿 PlantGuard AI backend is running"
-
-def get_openai_remedy(label):
-    prompt = f"Suggest an effective remedy for the tomato plant disease: {label}."
-
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful plant disease expert."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=100
-        )
-        return response['choices'][0]['message']['content'].strip()
-    except Exception as e:
-        return "Remedy not found. Try again later."
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -41,37 +24,18 @@ def predict():
     image_file = request.files['image']
     label, confidence = predict_disease(image_file)
 
-    label_remap = {
-        "Tomato Bacterial Spot": "Tomato___Bacterial_spot",
-        "Tomato Early Blight": "Tomato___Early_blight",
-        "Tomato Late Blight": "Tomato___Late_blight",
-        "Tomato Leaf Mold": "Tomato___Leaf_Mold",
-        "Tomato Septoria Leaf Spot": "Tomato___Septoria_leaf_spot",
-        "Tomato Spider Mites": "Tomato___Spider_mites Two-spotted_spider_mite",
-        "Tomato Target Spot": "Tomato___Target_Spot",
-        "Tomato Yellow Leaf Curl Virus": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-        "Tomato Mosaic Virus": "Tomato___Tomato_mosaic_virus",
-        "Tomato Healthy": "Tomato___Healthy"
-    }
-
-    remedies = {
-        "Tomato___Bacterial_spot": "Remove infected leaves and apply copper-based bactericides.",
-        "Tomato___Early_blight": "Use fungicide sprays like chlorothalonil and remove debris.",
-        "Tomato___Late_blight": "Destroy infected plants. Apply preventive fungicides early.",
-        "Tomato___Leaf_Mold": "Improve air circulation and use fungicide with mancozeb.",
-        "Tomato___Septoria_leaf_spot": "Remove lower infected leaves and apply fungicide.",
-        "Tomato___Spider_mites Two-spotted_spider_mite": "Spray with neem oil or insecticidal soap.",
-        "Tomato___Target_Spot": "Use drip irrigation and rotate crops yearly.",
-        "Tomato___Tomato_Yellow_Leaf_Curl_Virus": "Remove infected plants and control whiteflies.",
-        "Tomato___Tomato_mosaic_virus": "Remove and destroy infected plants. Avoid handling when wet.",
-        "Tomato___Healthy": "No issues detected. Keep your plant healthy! 🌿"
-    }
-
-    remedy_key = label_remap.get(label.strip(), "")
-    remedy = remedies.get(remedy_key)
-
-    if not remedy:
-        remedy = get_openai_remedy(label)
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a plant disease expert. Give short and actionable remedies."},
+                {"role": "user", "content": f"What is the treatment for {label} in tomato plants?"}
+            ],
+            max_tokens=100
+        )
+        remedy = response.choices[0].message.content.strip()
+    except Exception as e:
+        remedy = "Remedy not available at the moment. Please try again later."
 
     return jsonify({
         'label': label,
