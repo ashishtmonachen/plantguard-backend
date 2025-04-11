@@ -19,7 +19,20 @@ def predict():
 
     image_file = request.files['image']
     label, confidence = predict_disease(image_file)
-    label = label.strip()  # Clean up any whitespace
+
+    # Mapping model output to remedy-compatible keys
+    label_remap = {
+        "Tomato Bacterial Spot": "Tomato___Bacterial_spot",
+        "Tomato Early Blight": "Tomato___Early_blight",
+        "Tomato Late Blight": "Tomato___Late_blight",
+        "Tomato Leaf Mold": "Tomato___Leaf_Mold",
+        "Tomato Septoria Leaf Spot": "Tomato___Septoria_leaf_spot",
+        "Tomato Spider Mites": "Tomato___Spider_mites Two-spotted_spider_mite",
+        "Tomato Target Spot": "Tomato___Target_Spot",
+        "Tomato Yellow Leaf Curl Virus": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "Tomato Mosaic Virus": "Tomato___Tomato_mosaic_virus",
+        "Tomato Healthy": "Tomato___Healthy"
+    }
 
     remedies = {
         "Tomato___Bacterial_spot": "Remove infected leaves and apply copper-based bactericides.",
@@ -34,10 +47,13 @@ def predict():
         "Tomato___Healthy": "No issues detected. Keep your plant healthy! 🌿"
     }
 
+    remedy_key = label_remap.get(label.strip(), "")
+    remedy = remedies.get(remedy_key, "No specific remedy available.")
+
     return jsonify({
         'label': label,
         'confidence': round(confidence * 100, 2),
-        'remedy': remedies.get(label, "No specific remedy available.")
+        'remedy': remedy
     })
 
 if __name__ == '__main__':
