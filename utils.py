@@ -33,8 +33,9 @@ label_map = {v: k for k, v in class_indices.items()}
 # In[11]:
 
 
-ef preprocess_image(image_file):
-    image = Image.open(io.BytesIO(image_file.read())).convert("RGB")  
+def preprocess_image(image_file):
+    image_file.seek(0)  # Reset the stream position
+    image = Image.open(io.BytesIO(image_file.read())).convert("RGB")
     image = image.resize((224, 224))
     image_array = np.array(image) / 255.0
     return np.expand_dims(image_array, axis=0)
