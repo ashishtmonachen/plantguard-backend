@@ -1,31 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 from flask import Flask, request, jsonify
 from utils import predict_disease
 from flask_cors import CORS
 
-
-# In[2]:
-
-
 app = Flask(__name__)
 CORS(app)
-
-
-# In[3]:
-
 
 @app.route('/')
 def home():
     return "🌿 PlantGuard AI backend is running"
-
-
-# In[4]:
-
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -35,11 +20,17 @@ def predict():
     image_file = request.files['image']
     label, confidence = predict_disease(image_file)
 
-    # Example remedies — you can expand this
     remedies = {
-        "Tomato___Early_blight": "Use a fungicide and remove infected leaves.",
-        "Tomato___Late_blight": "Improve air flow and avoid overhead watering.",
-        "Tomato___Healthy": "No issues detected. Keep your plant healthy! 🌿",
+        "Tomato___Bacterial_spot": "Remove infected leaves and apply copper-based bactericides.",
+        "Tomato___Early_blight": "Use fungicide sprays like chlorothalonil and remove debris.",
+        "Tomato___Late_blight": "Destroy infected plants. Apply preventive fungicides early.",
+        "Tomato___Leaf_Mold": "Improve air circulation and use fungicide with mancozeb.",
+        "Tomato___Septoria_leaf_spot": "Remove lower infected leaves and apply fungicide.",
+        "Tomato___Spider_mites Two-spotted_spider_mite": "Spray with neem oil or insecticidal soap.",
+        "Tomato___Target_Spot": "Use drip irrigation and rotate crops yearly.",
+        "Tomato___Tomato_Yellow_Leaf_Curl_Virus": "Remove infected plants and control whiteflies.",
+        "Tomato___Tomato_mosaic_virus": "Remove and destroy infected plants. Avoid handling when wet.",
+        "Tomato___Healthy": "No issues detected. Keep your plant healthy! 🌿"
     }
 
     return jsonify({
@@ -50,10 +41,3 @@ def predict():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-# In[ ]:
-
-
-
-
