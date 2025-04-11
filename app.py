@@ -19,6 +19,7 @@ def predict():
 
     image_file = request.files['image']
     label, confidence = predict_disease(image_file)
+    label = label.strip()  # Clean up any whitespace
 
     remedies = {
         "Tomato___Bacterial_spot": "Remove infected leaves and apply copper-based bactericides.",
