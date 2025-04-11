@@ -4,6 +4,10 @@
 from flask import Flask, request, jsonify
 from utils import predict_disease
 from flask_cors import CORS
+import openai
+
+# 🔐 Hardcoded OpenAI API Key — use only for testing!
+openai.api_key = "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"
 
 app = Flask(__name__)
 CORS(app)
@@ -11,6 +15,23 @@ CORS(app)
 @app.route('/')
 def home():
     return "🌿 PlantGuard AI backend is running"
+
+def get_openai_remedy(label):
+    prompt = f"Suggest an effective remedy for the tomato plant disease: {label}."
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful plant disease expert."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=100
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return "Remedy not found. Try again later."
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -20,7 +41,6 @@ def predict():
     image_file = request.files['image']
     label, confidence = predict_disease(image_file)
 
-    # Mapping model output to remedy-compatible keys
     label_remap = {
         "Tomato Bacterial Spot": "Tomato___Bacterial_spot",
         "Tomato Early Blight": "Tomato___Early_blight",
@@ -48,7 +68,10 @@ def predict():
     }
 
     remedy_key = label_remap.get(label.strip(), "")
-    remedy = remedies.get(remedy_key, "No specific remedy available.")
+    remedy = remedies.get(remedy_key)
+
+    if not remedy:
+        remedy = get_openai_remedy(label)
 
     return jsonify({
         'label': label,
