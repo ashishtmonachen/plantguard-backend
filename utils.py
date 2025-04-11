@@ -34,10 +34,9 @@ label_map = {v: k for k, v in class_indices.items()}
 
 
 def preprocess_image(image_file):
-    image_file.seek(0)  # Always reset the file pointer first
+    image_file.seek(0)  
     image_bytes = image_file.read()
 
-    # Validate the content is not empty
     if not image_bytes:
         raise ValueError("Uploaded image is empty or unreadable.")
 
