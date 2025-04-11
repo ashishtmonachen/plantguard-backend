@@ -1,54 +1,43 @@
-import io
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> 9df334f (Fix: use BytesIO for reading uploaded image)
-
-
-# In[9]:
-
-
-=======
-import json
 import numpy as np
-import tensorflow as tf
 from PIL import Image
+import json
+import tensorflow as tf
+import io
 
-# Load model and class label map
->>>>>>> 294d2d79293922c51642c51ad85ec2cad2b8b293
-MODEL_PATH = 'model/plant_disease_model.h5'
-LABEL_MAP_PATH = 'model/class_indices.json'
+# Paths
+MODEL_PATH = "model/plant_disease_model.tflite"
+LABEL_MAP_PATH = "model/class_indices.json"
 
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-with open(LABEL_MAP_PATH, 'r') as f:
+# Load TFLite model
+interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
+interpreter.allocate_tensors()
+
+# Get input and output details
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+# Load label map
+with open(LABEL_MAP_PATH, "r") as f:
     class_indices = json.load(f)
 label_map = {v: k for k, v in class_indices.items()}
 
 def preprocess_image(image_file):
     image_file.seek(0)
-    image_bytes = image_file.read()
-    print("Image byte size:", len(image_bytes))  # For logs
-
-    if not image_bytes:
-        raise ValueError("Uploaded image is empty or unreadable.")
-
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image = Image.open(io.BytesIO(image_file.read())).convert("RGB")
     image = image.resize((224, 224))
-    image_array = np.array(image) / 255.0
-    return np.expand_dims(image_array, axis=0)
-
+    image_array = np.array(image, dtype=np.float32) / 255.0
+    image_array = np.expand_dims(image_array, axis=0)
+    return image_array
 
 def predict_disease(image_file):
-    # Load model only when needed (saves memory)
-    model = tf.keras.models.load_model("model/plant_disease_model.h5", compile=False)
-    with open("model/class_indices.json", 'r') as f:
-        class_indices = json.load(f)
-    label_map = {v: k for k, v in class_indices.items()}
-
     processed_image = preprocess_image(image_file)
-    prediction = model.predict(processed_image)
-    predicted_class = np.argmax(prediction)
-    confidence = float(np.max(prediction))
+
+    interpreter.set_tensor(input_details[0]['index'], processed_image)
+    interpreter.invoke()
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+
+    predicted_class = int(np.argmax(output_data))
+    confidence = float(np.max(output_data))
     label = label_map[predicted_class]
+
     return label, confidence
