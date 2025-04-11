@@ -14,8 +14,8 @@ import os
 # In[9]:
 
 
-MODEL_PATH = 'C:/Users/ashis/Downloads/AIDI 2000/plantguard-ai/model/plant_disease_model.h5'
-LABEL_MAP_PATH = 'C:/Users/ashis/Downloads/AIDI 2000/plantguard-ai/model/class_indices.json'
+MODEL_PATH = 'model/plant_disease_model.h5'
+LABEL_MAP_PATH = 'model/class_indices.json'
 
 
 # In[10]:
