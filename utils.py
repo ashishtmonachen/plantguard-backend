@@ -26,7 +26,14 @@ def preprocess_image(image_file):
     image_array = np.array(image) / 255.0
     return np.expand_dims(image_array, axis=0)
 
+
 def predict_disease(image_file):
+    # Load model only when needed (saves memory)
+    model = tf.keras.models.load_model("model/plant_disease_model.h5", compile=False)
+    with open("model/class_indices.json", 'r') as f:
+        class_indices = json.load(f)
+    label_map = {v: k for k, v in class_indices.items()}
+
     processed_image = preprocess_image(image_file)
     prediction = model.predict(processed_image)
     predicted_class = np.argmax(prediction)
