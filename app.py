@@ -9,7 +9,7 @@ import openai
 app = Flask(__name__)
 CORS(app)
 
-# 🔐 Hardcoded OpenAI key (ONLY for demo purposes — don’t do this in production)
+# 🔐 Hardcoded OpenAI key 
 openai.api_key = "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"  # Replace with your real API key
 
 @app.route('/')
